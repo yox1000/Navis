@@ -1,34 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapCanvas from "./components/MapCanvas.jsx";
 import { MAP_STYLE_URL, MAPTILER_API_KEY } from "./config.js";
-
-const demoQuestions = [
-  "How far to the next turn?",
-  "Is there a coffee shop nearby?",
-  "Guide me to the nearest exit.",
-];
+import { handleQuery } from "./api/router.js";
 
 const DEFAULT_COORDS = [-73.1236, 40.9148];
 
 function App() {
+  // Geolocation
+  const [currentPos, setCurrentPos] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Speech
   const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [assistantReply, setAssistantReply] = useState("Ask Navis anything about your surroundings.");
+  const recognitionRef = useRef(null);
+
   const [theme, setTheme] = useState("light");
   const [currentCoords, setCurrentCoords] = useState(DEFAULT_COORDS);
   const [coordsAccuracy, setCoordsAccuracy] = useState(null);
   const [geolocationError, setGeolocationError] = useState("");
   const [locationLabel, setLocationLabel] = useState("Melville Library");
-  const [transcript, setTranscript] = useState("");
-  const [assistantReply, setAssistantReply] = useState(
-    "Ask Navis anything about your surroundings."
-  );
   const isDark = theme === "dark";
-
-  const nextSuggestion = useMemo(() => {
-    if (!transcript) return demoQuestions[0];
-    const currentIndex =
-      demoQuestions.findIndex((q) => q === transcript) ?? 0;
-    return demoQuestions[(currentIndex + 1) % demoQuestions.length];
-  }, [transcript]);
 
   const sampleRouteGeoJson = useMemo(
     () => ({
@@ -52,6 +46,24 @@ function App() {
     }),
     []
   );
+
+  // Geolocation logic
+  const fetchDistance = async (lat1, lon1, lat2, lon2) => {
+    try {
+      // OSRM public server example
+      const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.code === 'Ok' && data.routes.length > 0) {
+        setDistance(data.routes[0].distance); // meters
+      } else {
+        setError('No route found');
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const fetchPlaceLabel = useCallback(
     async ([lng, lat]) => {
@@ -106,16 +118,50 @@ function App() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [fetchPlaceLabel]);
 
-  const handleMicToggle = () => {
-    setIsRecording((prev) => !prev);
+  // Speech logic
+  const handleMicToggle = async () => {
     if (!isRecording) {
-      setTranscript("Listening...");
-      setAssistantReply("Processing your location and question...");
+      // Start speech recognition
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech Recognition not supported in this browser.');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      setAssistantReply("Listening...");
+
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          interimTranscript += event.results[i][0].transcript;
+        }
+        setTranscript(interimTranscript);
+
+        // Optional: do something if transcript starts with "hello"
+        if (interimTranscript.trim().toLowerCase().startsWith('hello')) {
+          console.log('Hello detected!');
+          // You could trigger audio download or other actions here
+        }
+      };
+
+      recognition.start();
+      setIsRecording(true);
     } else {
-      setTranscript(nextSuggestion);
-      setAssistantReply(
-        "Head north for 60 feet, then turn right. Watch for the tactile strip on your left."
-      );
+      // Stop recognition
+      recognitionRef.current.stop();
+      setIsRecording(false);
+
+      // TODO: Process speech
+      const reply = await handleQuery(transcript);
+      setAssistantReply(reply.answer);
     }
   };
 
@@ -358,7 +404,7 @@ function App() {
                 : "border-slate-200 bg-slate-50 text-slate-500"
             }`}
           >
-            Tip: try asking “{nextSuggestion}”
+            Tip: try asking “I need a cup of coffee.”
           </div>
         </section>
       </main>
