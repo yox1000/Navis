@@ -1,8 +1,9 @@
+import "./config.js";   //load ENV first
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import { handleQuery } from "./router.js";
 
-dotenv.config();
+console.log("ENV URL SERVER:", process.env.NEURALSEEK_URL);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -21,23 +22,20 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.post("/api/query", (req, res) => {
-  const { message, coordinates } = req.body || {};
+app.post("/api/query", async (req, res) => {
+  try {
+    const { message, coordinates } = req.body;
 
-  if (!message) {
-    return res.status(400).json({ error: "message is required" });
+    const reply = await handleQuery(message, {
+      lat: coordinates?.[0],
+      lon: coordinates?.[1],
+    });
+
+    res.json(reply);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal failure" });
   }
-
-  const [lat, lon] = coordinates || [];
-
-  return res.json({
-    reply:
-      "Navis is ready. This is a placeholder response until NeuralSeek Maestro is wired up.",
-    debug: {
-      receivedMessage: message,
-      coordinates: { lat: lat ?? null, lon: lon ?? null },
-    },
-  });
 });
 
 app.listen(PORT, () => {
