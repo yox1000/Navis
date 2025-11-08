@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OSM + OSRM Route Example</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  #map { height: 90vh; width: 100%; }
+  body { font-family: system-ui; margin: 0; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map').setView([0, 0], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+let userMarker, routeLayer;
+
+// Get your current location
+// const intervalId = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const start = [pos.coords.latitude, pos.coords.longitude];
+        const end = [40.748817, -73.985428]; // Example: Empire State Building
+        map.setView(start, 13);
+
+        userMarker = L.marker(start).addTo(map).bindPopup("You are here").openPopup();
+        L.marker(end).addTo(map).bindPopup("Destination");
+
+        // Fetch route from OSRM public server
+        const url = `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson&steps=true`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.routes?.length) {
+            const route = data.routes[0];
+            const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+            routeLayer = L.polyline(coords, { color: 'blue', weight: 5 }).addTo(map);
+            map.fitBounds(routeLayer.getBounds());
+
+            const steps = route.legs[0].steps.map(s => s.maneuver.instruction);
+            // console.log("Turn-by-turn directions:\n", steps.join("\n"));
+            console.log("Distance in meters:", route.distance);
+        } else {
+            alert("No route found!");
+        }
+    }, err => {
+        alert("Failed to get location: " + err.message);
+    }, { enableHighAccuracy: true });
+// }, 1000);
+</script>
+</body>
+</html>

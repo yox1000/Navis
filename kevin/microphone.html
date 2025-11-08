@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Voice-Activated STT</title>
+<style>
+body { font-family: system-ui; margin:2rem; }
+#text { white-space: pre-wrap; background:#f6f6f6; padding:1rem; border-radius:.5rem; }
+</style>
+</head>
+<body>
+<h2>Talk to start — quiet to stop</h2>
+<p><b>Status:</b> <span id="status">Idle</span></p>
+<pre id="text">—</pre>
+<script>
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+  document.getElementById('status').textContent = 'SpeechRecognition not supported.';
+} else {
+  const recog = new SpeechRecognition();
+  recog.lang = 'en-US';
+  recog.interimResults = true;
+  recog.continuous = false; // we’ll restart manually
+
+  let transcript = '';
+  let recognizing = false;
+  let lastSound = 0;
+
+  // Microphone level monitor
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    const ctx = new AudioContext();
+    const src = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    src.connect(analyser);
+
+    function checkVolume() {
+      analyser.getByteTimeDomainData(data);
+      const rms = Math.sqrt(data.reduce((s, v) => s + (v-128)**2, 0) / data.length);
+      const now = performance.now();
+      if (rms > 10) lastSound = now;  // voice detected
+
+      const speaking = (now - lastSound) < 800; // silent >0.8s = stop
+      if (speaking && !recognizing) startRecog();
+      if (!speaking && recognizing) stopRecog();
+
+      requestAnimationFrame(checkVolume);
+    }
+    checkVolume();
+  });
+
+  function startRecog() {
+    recognizing = true;
+    document.getElementById('status').textContent = 'Listening...';
+    recog.start();
+  }
+  function stopRecog() {
+    recognizing = false;
+    document.getElementById('status').textContent = 'Silent...';
+    try { recog.stop(); } catch {}
+  }
+
+  recog.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+      const res = e.results[i];
+      if (res.isFinal) transcript += res[0].transcript + ' ';
+      else interim += res[0].transcript;
+    }
+    document.getElementById('text').textContent = transcript + interim;
+  };
+
+  recog.onend = () => { recognizing = false; }; // reset flag
+}
+</script>
+</body>
+</html>

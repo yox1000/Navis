@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Location Example</title>
+<style>
+body { font-family: system-ui; margin: 2rem; }
+#log { white-space: pre-wrap; background:#f6f6f6; padding:1rem; border-radius:.5rem; }
+</style>
+</head>
+<body>
+<h2>Live Location Tracker</h2>
+<button id="startBtn">Start Tracking</button>
+<button id="stopBtn">Stop</button>
+<div id="log">Press “Start Tracking” to begin.</div>
+
+<script>
+let watchId = null;
+const logEl = document.getElementById('log');
+
+document.getElementById('startBtn').onclick = () => {
+  if (!navigator.geolocation) {
+    logEl.textContent = 'Geolocation not supported.';
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    pos => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      logEl.textContent = 
+        `Latitude: ${latitude.toFixed(6)}\n` +
+        `Longitude: ${longitude.toFixed(6)}\n` +
+        `Accuracy: ±${accuracy.toFixed(1)} m\n` +
+        `Timestamp: ${new Date(pos.timestamp).toLocaleTimeString()}`;
+    },
+    err => {
+      logEl.textContent = 'Error: ' + err.message;
+    },
+    {
+      enableHighAccuracy: true,   // use GPS if available
+      maximumAge: 5000,           // reuse last position ≤5s old
+      timeout: 10000              // give up after 10s if no fix
+    }
+  );
+  logEl.textContent = 'Getting location...';
+};
+
+document.getElementById('stopBtn').onclick = () => {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    logEl.textContent = 'Tracking stopped.';
+    watchId = null;
+  }
+};
+</script>
+</body>
+</html>
