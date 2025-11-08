@@ -1,0 +1,34 @@
+# QR Code Images Required
+
+Generate the following QR codes and save as PNG images in this directory:
+
+## LIB_ENTR.png
+- QR code content: "LIB:ENTR"
+- Size: 300x300 pixels minimum
+- High contrast for easy scanning
+- Place at library main entrance
+
+## LIB_ELEV.png  
+- QR code content: "LIB:ELEV"
+- Size: 300x300 pixels minimum
+- Place near elevator on ground floor
+
+## LIB_DEST.png
+- QR code content: "LIB:DEST" 
+- Size: 300x300 pixels minimum
+- Place at reference section on second floor
+
+## Generation Instructions
+1. Use any QR code generator (qr-code-generator.com, qr.io, etc.)
+2. Enter the exact text content for each code
+3. Set high error correction level
+4. Export as PNG with transparent or white background
+5. Print actual codes for physical placement during testing
+
+## Testing
+- Print these QR codes on paper
+- Place at corresponding locations during indoor navigation demo
+- QR scanner should return the exact payload strings above
+
+## Temporary Alternative
+For initial testing, you can display these QR codes on a second phone/tablet screen instead of printing them.

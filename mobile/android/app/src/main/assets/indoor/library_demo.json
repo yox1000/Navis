@@ -1,0 +1,288 @@
+{
+  "building": "Library",
+  "floors": [
+    {
+      "id": "1",
+      "name": "Ground Floor",
+      "image": "library_f1.png",
+      "width": 1000,
+      "height": 700,
+      "nodes": {
+        "ENTR": {
+          "id": "ENTR",
+          "name": "Main Entrance",
+          "x": 500,
+          "y": 650,
+          "floor": 1,
+          "type": "entrance",
+          "qr_payload": "LIB:ENTR"
+        },
+        "LOBBY": {
+          "id": "LOBBY", 
+          "name": "Main Lobby",
+          "x": 500,
+          "y": 550,
+          "floor": 1,
+          "type": "corridor"
+        },
+        "CIRC1": {
+          "id": "CIRC1",
+          "name": "Circulation Desk",
+          "x": 300,
+          "y": 400,
+          "floor": 1,
+          "type": "service"
+        },
+        "CORR1A": {
+          "id": "CORR1A",
+          "name": "East Corridor",
+          "x": 700,
+          "y": 400,
+          "floor": 1,
+          "type": "corridor"
+        },
+        "CORR1B": {
+          "id": "CORR1B",
+          "name": "West Corridor", 
+          "x": 300,
+          "y": 300,
+          "floor": 1,
+          "type": "corridor"
+        },
+        "CORR1C": {
+          "id": "CORR1C",
+          "name": "North Corridor",
+          "x": 500,
+          "y": 250,
+          "floor": 1,
+          "type": "corridor"
+        },
+        "ELEV": {
+          "id": "ELEV",
+          "name": "Elevator Floor 1",
+          "x": 800,
+          "y": 300,
+          "floor": 1,
+          "type": "elevator",
+          "qr_payload": "LIB:ELEV"
+        },
+        "STAIRS1": {
+          "id": "STAIRS1",
+          "name": "Staircase Floor 1",
+          "x": 200,
+          "y": 200,
+          "floor": 1,
+          "type": "stairs"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Second Floor",
+      "image": "library_f2.png", 
+      "width": 1000,
+      "height": 700,
+      "nodes": {
+        "ELEV2": {
+          "id": "ELEV2",
+          "name": "Elevator Floor 2",
+          "x": 800,
+          "y": 300,
+          "floor": 2,
+          "type": "elevator",
+          "connects_to": "ELEV"
+        },
+        "STAIRS2": {
+          "id": "STAIRS2",
+          "name": "Staircase Floor 2", 
+          "x": 200,
+          "y": 200,
+          "floor": 2,
+          "type": "stairs",
+          "connects_to": "STAIRS1"
+        },
+        "CORR2A": {
+          "id": "CORR2A",
+          "name": "East Corridor F2",
+          "x": 700,
+          "y": 300,
+          "floor": 2,
+          "type": "corridor"
+        },
+        "CORR2B": {
+          "id": "CORR2B",
+          "name": "Study Area Corridor",
+          "x": 500,
+          "y": 400,
+          "floor": 2,
+          "type": "corridor"
+        },
+        "CORR2C": {
+          "id": "CORR2C",
+          "name": "North Study Area",
+          "x": 400,
+          "y": 250,
+          "floor": 2,
+          "type": "corridor"
+        },
+        "STUDY1": {
+          "id": "STUDY1", 
+          "name": "Group Study Room 1",
+          "x": 300,
+          "y": 350,
+          "floor": 2,
+          "type": "room"
+        },
+        "DEST": {
+          "id": "DEST",
+          "name": "Reference Section",
+          "x": 600,
+          "y": 200,
+          "floor": 2,
+          "type": "destination",
+          "qr_payload": "LIB:DEST"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "ENTR",
+      "to": "LOBBY",
+      "distance": 10,
+      "stairs": false,
+      "description": "Enter the main lobby"
+    },
+    {
+      "from": "LOBBY", 
+      "to": "CIRC1",
+      "distance": 15,
+      "stairs": false,
+      "description": "Head west to circulation desk"
+    },
+    {
+      "from": "LOBBY",
+      "to": "CORR1A", 
+      "distance": 12,
+      "stairs": false,
+      "description": "Go east down the main corridor"
+    },
+    {
+      "from": "CIRC1",
+      "to": "CORR1B",
+      "distance": 8,
+      "stairs": false,
+      "description": "Continue west"
+    },
+    {
+      "from": "CORR1B",
+      "to": "CORR1C",
+      "distance": 10,
+      "stairs": false,
+      "description": "Turn north"
+    },
+    {
+      "from": "CORR1C",
+      "to": "ELEV",
+      "distance": 18,
+      "stairs": false,
+      "description": "Head east to the elevator"
+    },
+    {
+      "from": "CORR1A",
+      "to": "ELEV",
+      "distance": 12,
+      "stairs": false,
+      "description": "Continue east to elevator"
+    },
+    {
+      "from": "CORR1B",
+      "to": "STAIRS1",
+      "distance": 8,
+      "stairs": true,
+      "description": "Go to staircase (requires stairs)"
+    },
+    {
+      "from": "ELEV",
+      "to": "ELEV2",
+      "distance": 5,
+      "stairs": false,
+      "description": "Take elevator to floor 2",
+      "floor_change": true
+    },
+    {
+      "from": "STAIRS1",
+      "to": "STAIRS2", 
+      "distance": 8,
+      "stairs": true,
+      "description": "Go up stairs to floor 2",
+      "floor_change": true
+    },
+    {
+      "from": "ELEV2",
+      "to": "CORR2A",
+      "distance": 8,
+      "stairs": false,
+      "description": "Exit elevator and head west"
+    },
+    {
+      "from": "CORR2A",
+      "to": "CORR2B",
+      "distance": 12,
+      "stairs": false,
+      "description": "Continue west to study area"
+    },
+    {
+      "from": "CORR2A", 
+      "to": "DEST",
+      "distance": 15,
+      "stairs": false,
+      "description": "Head north to reference section"
+    },
+    {
+      "from": "CORR2B",
+      "to": "STUDY1",
+      "distance": 8,
+      "stairs": false,
+      "description": "Enter group study area"
+    },
+    {
+      "from": "CORR2B",
+      "to": "CORR2C", 
+      "distance": 10,
+      "stairs": false,
+      "description": "Continue north"
+    },
+    {
+      "from": "CORR2C",
+      "to": "DEST",
+      "distance": 12,
+      "stairs": false,
+      "description": "Head east to reference section"
+    },
+    {
+      "from": "STAIRS2",
+      "to": "CORR2C",
+      "distance": 10,
+      "stairs": false,
+      "description": "Head east from stairs"
+    }
+  ],
+  "routes": {
+    "entrance_to_destination": {
+      "name": "Entrance to Reference Section",
+      "description": "Navigate from main entrance to reference section on floor 2",
+      "start": "ENTR",
+      "end": "DEST"
+    },
+    "entrance_to_destination_no_stairs": {
+      "name": "Accessible Route to Reference Section", 
+      "description": "Elevator route avoiding stairs",
+      "start": "ENTR",
+      "end": "DEST",
+      "constraints": {
+        "stairs": false
+      }
+    }
+  }
+}

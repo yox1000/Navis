@@ -1,0 +1,17 @@
+{
+  "name": "navis",
+  "version": "1.0.0",
+  "description": "Pep Scout navigation app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  },
+  "dependencies": {
+    "@capacitor/core": "latest",
+    "@capacitor/android": "latest",
+    "@capacitor/geolocation": "latest"
+  }
+}

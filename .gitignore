@@ -4,3 +4,14 @@ dist
 .DS_Store
 *.log
 context/
+.env
+*.keystore
+*.jks
+frontend/public/audio/*
+mobile/android/app/google-services.json
+
+.env
+*.keystore
+*.jks
+frontend/public/audio/*
+mobile/android/app/google-services.json

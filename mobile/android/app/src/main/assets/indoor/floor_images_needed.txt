@@ -1,0 +1,32 @@
+# Floor Plan Images Required
+
+Place the following floor plan images in this directory:
+
+## library_f1.png
+- Dimensions: 1000x700 pixels
+- Shows ground floor layout of library
+- Key landmarks at coordinates from library_demo.json:
+  - Entrance at bottom center (500, 650)
+  - Circulation desk at left (300, 400)  
+  - Elevator at right side (800, 300)
+  - Corridors connecting areas
+
+## library_f2.png  
+- Dimensions: 1000x700 pixels
+- Shows second floor layout
+- Key landmarks:
+  - Elevator at right side (800, 300)
+  - Study areas in center (500, 400)
+  - Reference section at top right (600, 200)
+  - Corridors connecting areas
+
+## Notes for Floor Plan Creation
+- Use simple line drawings or architectural sketches
+- Mark elevator and staircase locations clearly
+- Include basic room outlines
+- Use consistent scale matching coordinate system
+- Save as PNG format for transparency support
+- Keep file sizes reasonable (< 500KB each)
+
+## Temporary Workaround
+For testing, you can use any 1000x700 PNG images as placeholders. The app will overlay navigation paths on top of these background images.

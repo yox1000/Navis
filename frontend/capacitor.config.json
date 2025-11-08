@@ -1,0 +1,5 @@
+{
+  "appId": "com.navis.pepscout",
+  "appName": "Pep Scout",
+  "webDir": "frontend/dist"
+}

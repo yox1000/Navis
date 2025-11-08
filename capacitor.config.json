@@ -1,0 +1,12 @@
+{
+  "appId": "com.navis.pepscout",
+  "appName": "Pep Scout",
+  "webDir": "frontend/dist",
+  "server": {
+    "url": "http://<LAN_IP>:5173",
+    "cleartext": true
+  },
+  "android": {
+    "path": "mobile/android"
+  }
+}

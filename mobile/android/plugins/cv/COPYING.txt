@@ -1,0 +1,20 @@
+# Model Attribution
+
+## TensorFlow Lite Object Detection Model
+- Source: TensorFlow Model Garden / TensorFlow Hub
+- Model: EfficientDet-Lite0 or SSD MobileNet v2 
+- License: Apache 2.0
+- URL: https://tfhub.dev/tensorflow/lite-model/efficientdet/lite0/detection/metadata/1
+
+## COCO Labels
+- Source: COCO Dataset
+- Labels: 80 common object classes
+- License: Creative Commons Attribution 4.0
+- URL: https://cocodataset.org/
+
+## PathSense Integration
+- Referenced camera pipeline structure from hackthenorth-2024/camera/
+- Adapted object detection concepts and severity mapping
+- No direct code copying - implementation is original for Android/TFLite
+
+Note: Actual model file (detect.tflite) needs to be downloaded separately and placed in this assets folder due to size constraints. Use a quantized model under 10MB for mobile deployment.
