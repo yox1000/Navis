@@ -214,6 +214,11 @@ class IndoorEngine(private val graph: IndoorGraph) {
     }
 
     /**
+     * Snapshot of the current path for UI consumption
+     */
+    fun getPathSnapshot(): IndoorGraph.PathResult? = currentPath
+
+    /**
      * Get remaining distance estimate
      */
     fun getRemainingDistance(): Double {
