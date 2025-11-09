@@ -464,6 +464,180 @@ If you want, I can also give a minimal `library_demo.json` node list and an exam
 
 ---
 
+# Android Phase 2.1 — Safety CV must-dos
+
+## Goal
+
+Make object and hurdle detection rock solid for the demo. If an obstacle blocks the planned corridor the app must speak a short corrective cue, suggest a clear side, and prevent walking into walls. Works indoors and outdoors.
+
+## Inputs already available
+
+* `LocationPlugin` 2 s cadence
+* `HeadingPlugin` 500 ms azimuth
+* `CVPlugin` detections
+* `OutdoorRouter` polyline + next step
+* `IndoorEngine` current floor, current edge, next node
+
+## New data from CV to compute
+
+Add to `cv` module:
+
+1. **Obstacle events**: already emitted. Keep.
+2. **Free-space vector**: 2D direction in camera frame toward largest navigable gap.
+3. **Wall proximity**: flag when front wall plane likely within 1.5 m.
+
+### Free-space vector spec
+
+* Divide frame into 7 vertical bins.
+* Compute occupancy per bin from detections plus optical-flow magnitude.
+* Pick the longest contiguous run of low-occupancy bins that intersects camera center.
+* Return center-of-gap angle in camera frame degrees, right positive.
+* Payload:
+
+```
+{ type:"free_space", angle_deg: number, confidence: 0..1, ts }
+```
+
+### Wall proximity spec
+
+* Use edge density + FOE contraction heuristic.
+* If >70 percent of central columns are high gradient with no parallax for 10 frames, set `wall=true`.
+* Payload:
+
+```
+{ type:"wall", distance_m: 1.0|0.7|0.5 (bucketed), ts }
+```
+
+## Fusion logic on the nav side
+
+Create `SafetyManager` in `nav/` that subscribes to `hazard`, `free_space`, `wall`.
+
+1. **Block detector on route**
+
+* Maintain a 20 degree cone aligned with current heading.
+* If any obstacle label in {person, chair, bike, unknown} has box area ratio ≥ 4 percent and centroid inside the cone for ≥ 300 ms, mark `blocked=true`.
+
+2. **Side suggestion**
+
+* When `blocked=true`, read latest `free_space` vector.
+* Map angle to cue:
+
+  * angle ≥ +12 deg -> "Small right. Take the open side."
+  * angle ≤ −12 deg -> "Small left. Take the open side."
+  * else -> "Pause. Path closed ahead."
+
+3. **Wall guard**
+
+* If `wall=true` and speed estimate > 0.5 m/s, speak "Stop. Wall ahead" and set a 2 second deadman that suppresses forward prompts.
+
+4. **Indoor corridor guard**
+
+* If indoor and `blocked=true` for more than 2 seconds on the current edge, compute an alternate within the same floor that deviates at most one edge. If none, ask user to backtrack 3 meters.
+
+5. **Debounce and rate limits**
+
+* Do not speak more than once every 2 seconds for safety cues.
+* Coalesce multiple hazards to the highest severity.
+* Clear `blocked` when no obstacle in cone for 1 second.
+
+## Spoken copy rules
+
+Keep lines under 7 seconds. Use only these phrases.
+
+* "Careful. Obstacle ahead."  severity warn
+* "Stop. Wall ahead."  severity danger
+* "Small left. Take the open side."
+* "Small right. Take the open side."
+* "Path closed. Please wait."
+* "Alternate found. Follow the blue line."
+
+## UI
+
+* Add a compact **Safety banner** that shows one of: Obstacle, Wall, Clear-left, Clear-right, Closed.
+* Banner auto hides in 2 seconds unless danger.
+
+## Integration points
+
+* Outdoor: when `blocked=true`, pause step advancement until cleared, but keep reroute checks running.
+* Indoor: when `blocked=true`, do not auto-advance. Offer manual Next only if banner is Clear-left or Clear-right.
+* Voice queue: safety lines preempt navigation lines.
+
+## Config knobs (put in PrefsStore with defaults)
+
+* `safety.cone_deg = 20`
+* `safety.min_box_area_ratio = 0.04`
+* `safety.min_block_ms = 300`
+* `safety.cooldown_ms = 2000`
+* `safety.wall_trigger_frames = 10`
+* `safety.wall_distance_bins = [1.5, 1.0, 0.7, 0.5]`
+
+## Acceptance tests for demo
+
+### A. Couch-in-path indoor
+
+Setup: floor 1 corridor, small couch centered 3 to 4 m ahead.
+
+1. Walk toward couch. Expect banner "Obstacle" and voice "Careful. Obstacle ahead."
+2. Within 1 second receive free-space angle. If positive, voice "Small right. Take the open side." If negative, "Small left…"
+3. After you sidestep, `blocked=false` within 1 second. Outdoor or indoor step guidance resumes.
+
+### B. Wall-block at end of corridor
+
+Place camera facing a wall at 1 m to 1.5 m.
+
+1. Hold steady while walking slowly. Expect "Stop. Wall ahead." and 2 second deadman where no forward prompts occur.
+2. Turn 30 degrees. Deadman clears. Next nav line may play.
+
+### C. Persistent block
+
+Stand still behind the couch for 3 seconds indoors.
+
+1. Expect "Path closed. Please wait."
+2. If an alternate one-edge detour exists in current floor, compute and say "Alternate found. Follow the blue line." Path redraws.
+
+### D. Rate limit
+
+Wave a hand in front of camera repeatedly.
+
+1. Expect at most one safety voice line every 2 seconds. No spam.
+
+### E. Outdoor curb
+
+Put a box 1 m ahead outdoors.
+
+1. Expect "Careful. Obstacle ahead." with banner.
+2. Heading-based prompts continue after obstacle clears.
+
+## Telemetry and logs
+
+* Add a simple on-device log view in debug builds at Settings → Debug:
+
+  * last 20 hazard events
+  * last 10 free-space vectors
+  * last 10 wall flags
+  * last 10 spoken lines
+* Write a single CSV per session in `filesDir/logs/` with timestamp, type, payload.
+
+## Keys and privacy
+
+* No images saved. Only derived events and aggregate stats.
+* All external API calls keep keys in Keystore.
+
+## Deliverables checklist for Claude
+
+* Implement `cv/free_space` and `cv/wall` computations in CVPlugin with the specs above.
+* Implement `nav/SafetyManager` with fusion logic and rate limiting.
+* Wire safety to preempt TTS in `VoicePlayer`.
+* Add Safety banner UI and vibration pattern `[80,60,80]`.
+* Add Prefs knobs and Debug log view.
+* Update RUNBOOK with the four demo scripts and a quick reset tip.
+
+---
+
+When Claude says done, try the couch and wall scripts exactly as written. If any step misses, I will tune the thresholds with you.
+
+---
+
 . Here is a clean, non-blocking checklist + file tree for Claude Code. It keeps your work isolated, uses placeholders, and lets you drop in PathSense code for reference without touching teammates' paths. No code inside, only structure, contracts, and tasks.
 
 # Goals for your slice
