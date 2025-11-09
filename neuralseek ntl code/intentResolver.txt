@@ -1,0 +1,31 @@
+<< name:json, prompt:true >>
+
+{{ LLM
+    | prompt:"
+You are a strict intent classifier.
+
+You will be given a JSON object. Your task:
+1) Read the value of the field named 'intent'.
+2) If the value is 1, 2, or 3 → return that number ONLY.
+3) Otherwise → return 4.
+
+OUTPUT RULES:
+- Return ONLY the number
+- No words
+- No punctuation
+- No quotes
+- No backticks
+- No explanation
+
+Examples:
+{\"intent\":1,\"entity\":\"x\"} -> 1
+{\"intent\":2,\"entity\":\"y\"} -> 2
+{\"intent\":3} -> 3
+{\"intent\":99} -> 4
+{} -> 4
+{\"entity\":\"x\"} -> 4
+
+Return plaintext exactly like:
+"string"
+}}
+

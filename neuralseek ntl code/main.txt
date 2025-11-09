@@ -1,0 +1,95 @@
+<< name:queryText, prompt:true >>
+<< name:lat, prompt:true >>
+<< name:lon, prompt:true >>
+
+{{ maistroSandbox
+     | template:"interpreter"
+     | params:"[{\"name\":\"queryText\",\"value\":\"<< name:queryText >>\"}]"
+}}
+=> {{ variable | name:"raw" }}
+
+{{ jsonLookup
+     | variable:"raw"
+     | path:"entity"
+}}
+=> {{ variable | name:"entity" }}
+
+{{ maistroSandbox
+     | template:"intentResolver"
+     | params:"[{\"name\":\"json\",\"value\":\"<< name:raw >>\"}]"
+}}
+=> {{ variable | name:"intent" }}
+
+
+
+###################################################################
+###  CASE A — intent != 3
+###################################################################
+
+{{ condition | value:"<< name:intent >> != '3'" }}=>{{
+    LLM
+    | prompt:"
+Output JSON only.
+
+You are given:
+- The extracted destination/category: << name:entity >>
+- The user's coordinates:
+   lat = << name:lat >>
+   lon = << name:lon >>
+
+If possible, determine the best-match latitude/longitude for the destination/category relative to the user.
+If not determinable, set both coords to null.
+
+Return exactly this JSON object:
+{
+  \"intent\": << name:intent >>,
+  \"entity\": \"<< name:entity >>\",
+  \"data\": null,
+  \"coords\": {
+      \"lat\": <destination-lat-or-null>,
+      \"lon\": <destination-lon-or-null>
+  }
+}
+"
+}}
+{{ condition | value:"<< name:intent >> != '3'" }}=>{{ returnResult | contentType:"application/json" }}
+
+{{ condition | value:"<< name:intent >> != '3'" }}=>{{ stop }}
+
+
+###################################################################
+###  CASE B — intent == 3 → do exploration
+###################################################################
+
+{{ maistroSandbox 
+     | template:"exploration"
+     | params:"[
+       {\"name\":\"entity\",\"value\":\"<< name:entity >>\"},
+       {\"name\":\"lat\",\"value\":\"<< name:lat >>\"},
+       {\"name\":\"lon\",\"value\":\"<< name:lon >>\"},
+       {\"name\":\"queryText\",\"value\":\"<< name:queryText >>\"}
+     ]"
+}}
+=> {{ variable | name:"exploreOut" }}
+
+{{ jsonLookup
+     | variable:"exploreOut"
+     | path:"speech"
+}}
+=> {{ variable | name:"speech" }}
+
+{{ LLM
+    | prompt:"
+Output JSON only.
+
+Return exactly this object:
+{
+  \"intent\": 3,
+  \"entity\": \"<< name:entity >>\",
+  \"data\": \"<< name:speech >>\"
+}
+"
+}}
+=> {{ returnResult | contentType:"application/json" }}
+
+{{ stop }}

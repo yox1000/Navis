@@ -1,0 +1,16 @@
+<< name:queryText, prompt:true >>
+
+{{ LLM 
+    | prompt:"You are a navigation intent classifier. Output JSON only. Classify user query into:
+1 = navigate to destination
+2 = route check
+3 = explore nearby
+4 = not navigation
+
+Extract destination or category if present.
+
+User query: << name:queryText, prompt:false >>
+
+Return JSON object exactly like:
+{ \"intent\": number, \"entity\": string }"
+}}

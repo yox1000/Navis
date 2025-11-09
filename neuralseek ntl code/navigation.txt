@@ -1,0 +1,8 @@
+{{ variable | name:"destinationName" }}
+{{ variable | name:"etaText" }}
+{{ variable | name:"distanceText" }}
+
+{{ returnResult
+   | value:"You are navigating to << name:destinationName >>. It is about << name:distanceText >> away and should take around << name:etaText >>. I will guide you step by step."
+   | contentType:"text/plain"
+}}

@@ -1,0 +1,13 @@
+{{ variable | name:"onRoute" }}
+
+{{ condition | value:"<< name:onRoute >> == true" }}
+    => {{ returnResult
+           | value:"Yes, you are currently on the correct route."
+           | contentType:"text/plain"
+        }}
+
+{{ condition | value:"<< name:onRoute >> == false" }}
+    => {{ returnResult
+           | value:"No, you are off route. Recalculating directions now."
+           | contentType:"text/plain"
+        }}
