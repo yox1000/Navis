@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">NavisApp</string>
+    <string name="maptiler_key" translatable="false">qRoabl1Sk209dUYRU4L3</string>
+    <string name="elevenlabs_api_key" translatable="false">sk_305001d7f3f03122bf8be8cac706d396c597b7868c3441a7</string>
+    <string name="gemini_api_key" translatable="false">AIzaSyBluYJkrozMcPAOV2x7qZvvg1-EbJC0I6E</string>
+    <string name="neuralseek_url" translatable="false">https://stagingapi.neuralseek.com/v1/stony13/maistro</string>
+    <string name="neuralseek_key" translatable="false">f4d488a0-b400d693-59e0b59f-1682b8db</string>
+</resources>

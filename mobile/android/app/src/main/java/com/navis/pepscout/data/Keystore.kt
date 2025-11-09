@@ -22,9 +22,6 @@ class Keystore(private val context: Context) {
         const val ELEVENLABS_API_KEY = "elevenlabs_api_key"
         const val GEMINI_API_KEY = "gemini_api_key" 
         const val NEURALSEEK_API_KEY = "neuralseek_api_key"
-        const val MAPPEDIN_API_KEY = "mappedin_api_key"
-        const val MAPPEDIN_SECRET = "mappedin_secret"
-        const val COHERE_API_KEY = "cohere_api_key"
         
         private const val TRANSFORMATION = "${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"
     }
@@ -151,24 +148,14 @@ class Keystore(private val context: Context) {
     fun setElevenLabsKey(apiKey: String) = setApiKey(ELEVENLABS_API_KEY, apiKey)
     fun setGeminiKey(apiKey: String) = setApiKey(GEMINI_API_KEY, apiKey)  
     fun setNeuralSeekKey(apiKey: String) = setApiKey(NEURALSEEK_API_KEY, apiKey)
-    fun setMappedinApiKey(apiKey: String) = setApiKey(MAPPEDIN_API_KEY, apiKey)
-    fun setMappedinSecret(secret: String) = setApiKey(MAPPEDIN_SECRET, secret)
-    fun setCohereKey(apiKey: String) = setApiKey(COHERE_API_KEY, apiKey)
     
     fun getElevenLabsKey() = getApiKey(ELEVENLABS_API_KEY)
     fun getGeminiKey() = getApiKey(GEMINI_API_KEY)
     fun getNeuralSeekKey() = getApiKey(NEURALSEEK_API_KEY)
-    fun getMappedinApiKey() = getApiKey(MAPPEDIN_API_KEY)
-    fun getMappedinSecret() = getApiKey(MAPPEDIN_SECRET)
-    fun getCohereKey() = getApiKey(COHERE_API_KEY)
     
     fun hasAllKeys(): Boolean {
         return hasApiKey(ELEVENLABS_API_KEY) && 
                hasApiKey(GEMINI_API_KEY) && 
                hasApiKey(NEURALSEEK_API_KEY)
-    }
-    
-    fun hasMappedinKeys(): Boolean {
-        return hasApiKey(MAPPEDIN_API_KEY) && hasApiKey(MAPPEDIN_SECRET)
     }
 }

@@ -1,0 +1,14 @@
+Project Idea (from context/project-setup-plan.txt)
+
+- Navis is a web/app navigation companion: users ask questions, the system answers via voice based on instantaneous coordinates.
+- It assists with routing/rerouting, continuous step-by-step guidance, and optional UI.
+- Primary audience is visually impaired people; Navis acts as a constant spoken guide.
+
+Dev Notes (from context/dev-notes.md)
+
+- Current stack: React/Vite frontend with Tailwind + MapLibre/MapTiler maps; Node/Express backend; browser geolocation + MapTiler reverse geocoding.
+- Decisions: need higher-fidelity location; plan to use phone sensors or native app. Android preferred for accurate fused location and accessibility features.
+- Hackathon plan: build a single-device Android app that keeps all orchestration on-device—capture mic ? STT API ? NeuralSeek Maestro ? OSRM public endpoint ? TTS ? playback + map update. API keys live in-app for now (acceptable for demo). Backend remains optional; add later if we need multi-device support or secure key storage.
+
+Overall Summary
+Navis’s goal is a location-aware voice companion for visually impaired users. The existing web prototype proved out the UI and MapLibre integration but lacked indoor accuracy. For the hackathon demo we’ll pivot to a native Android app (Kotlin/Jetpack Compose) that directly handles sensors, speech, routing, and TTS with public APIs, enabling precise, single-phone navigation guidance.

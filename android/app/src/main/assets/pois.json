@@ -1,0 +1,197 @@
+{
+  "kenneth_p_lavalle_stadium": {
+    "aliases": ["lavalle stadium", "kenneth p lavalle stadium", "stadium"],
+    "lat": 40.9189131074562,
+    "lon": -73.12437848601624
+  },
+  "student_activities_center": {
+    "aliases": ["sac", "student activities center", "student center"],
+    "lat": 40.9143141778547,
+    "lon": -73.12431555491675
+  },
+  "green_tea": {
+    "aliases": ["green tea", "tea place"],
+    "lat": 40.92244315412136,
+    "lon": -73.12776128940696
+  },
+  "roth_cafe": {
+    "aliases": ["roth cafe", "roth dining"],
+    "lat": 40.910669669289014,
+    "lon": -73.12364773547675
+  },
+  "new_computer_science": {
+    "aliases": ["new cs", "computer science building"],
+    "lat": 40.91275890601723,
+    "lon": -73.12370955594298
+  },
+  "stony_brook_union": {
+    "aliases": ["union", "sb union"],
+    "lat": 40.91711616701561,
+    "lon": -73.12251327925149
+  },
+  "simons_center_for_geometry": {
+    "aliases": ["simons center", "geometry center"],
+    "lat": 40.915870512504604,
+    "lon": -73.1270251016652
+  },
+  "west_side_dining": {
+    "aliases": ["west side dining", "west dining"],
+    "lat": 40.913166125396295,
+    "lon": -73.13054358859154
+  },
+  "tabler_community": {
+    "aliases": ["tabler", "tabler community"],
+    "lat": 40.9094819078592,
+    "lon": -73.12711638949374
+  },
+  "toscanini_hall": {
+    "aliases": ["toscanini", "toscanini hall"],
+    "lat": 40.910190452166525,
+    "lon": -73.1283369381881
+  },
+  "stony_brook_hospital": {
+    "aliases": ["hospital", "sbu hospital"],
+    "lat": 40.909756183388076,
+    "lon": -73.11555653283006
+  },
+  "stony_brook_train_station": {
+    "aliases": ["train station", "stony brook station"],
+    "lat": 40.92157771897867,
+    "lon": -73.12806282699813
+  },
+  "hilton_garden_inn_stony_brook": {
+    "aliases": ["hilton", "hilton garden inn"],
+    "lat": 40.91357353772958,
+    "lon": -73.117959422339
+  },
+  "stony_brook_athletic_fields": {
+    "aliases": ["athletic fields", "fields"],
+    "lat": 40.92231652463287,
+    "lon": -73.12385551187326
+  },
+  "stony_brook_student_activities_center": {
+    "aliases": ["student activities center", "sac"],
+    "lat": 40.91431240612433,
+    "lon": -73.12420364290115
+  },
+  "stony_brook_humanities_building": {
+    "aliases": ["humanities", "humanities building"],
+    "lat": 40.914360357449006,
+    "lon": -73.1211015121563
+  },
+  "stony_brook_h_community": {
+    "aliases": ["h community", "h quad"],
+    "lat": 40.91981563555709,
+    "lon": -73.11951678075619
+  },
+  "jersey_mikes": {
+    "aliases": ["jersey mikes", "mikes"],
+    "lat": 40.91981563555709,
+    "lon": -73.11951678075619
+  },
+  "javits_lecture_center": {
+    "aliases": ["javits", "lecture center"],
+    "lat": 40.91298373862392,
+    "lon": -73.12205060670954
+  },
+  "life_science_building": {
+    "aliases": ["life science", "life sciences"],
+    "lat": 40.91152677295968,
+    "lon": -73.11999373989467
+  },
+  "gershwin_college": {
+    "aliases": ["gershwin", "gershwin college"],
+    "lat": 40.91117465172584,
+    "lon": -73.12243900621769
+  },
+  "eisenhower_hall": {
+    "aliases": ["eisenhower", "eisenhower hall"],
+    "lat": 40.91450419926724,
+    "lon": -73.13194858006237
+  },
+  "crazy_beans": {
+    "aliases": ["crazy beans"],
+    "lat": 40.91715978654608,
+    "lon": -73.14637961854915
+  },
+  "georgios_coffee_roasters": {
+    "aliases": ["georgios", "coffee roasters"],
+    "lat": 40.91791152089329,
+    "lon": -73.14648047136642
+  },
+  "schnitzels": {
+    "aliases": ["schnitzels"],
+    "lat": 40.916214328388875,
+    "lon": -73.14628579115877
+  },
+  "luca": {
+    "aliases": ["luca"],
+    "lat": 40.91675856987272,
+    "lon": -73.14654722396268
+  },
+  "trader_joes": {
+    "aliases": ["trader joes"],
+    "lat": 40.869130510900675,
+    "lon": -73.12801305117483
+  },
+  "target": {
+    "aliases": ["target"],
+    "lat": 40.88543534016751,
+    "lon": -73.0993881629325
+  },
+  "aldi": {
+    "aliases": ["aldi"],
+    "lat": 40.86642322863533,
+    "lon": -73.13311168769434
+  },
+  "best_buy": {
+    "aliases": ["best buy"],
+    "lat": 40.87095867537477,
+    "lon": -73.13060289812937
+  },
+  "whole_foods_market": {
+    "aliases": ["whole foods", "whole foods market"],
+    "lat": 40.86961671067503,
+    "lon": -73.12593447260902
+  },
+  "port_jefferson_station": {
+    "aliases": ["port jeff station", "port jefferson station"],
+    "lat": 40.93465899907345,
+    "lon": -73.05376879157653
+  },
+  "port_jefferson": {
+    "aliases": ["port jefferson", "port jeff"],
+    "lat": 40.94662159643212,
+    "lon": -73.06926234835646
+  },
+  "estate_at_the_village_inn": {
+    "aliases": ["village inn", "estate at the village inn"],
+    "lat": 40.91968891979927,
+    "lon": -73.14855759933523
+  },
+  "green_cactus_cafe": {
+    "aliases": ["green cactus", "green cactus cafe"],
+    "lat": 40.91983919272059,
+    "lon": -73.12986021665833
+  },
+  "the_bench": {
+    "aliases": ["bench bar", "the bench"],
+    "lat": 40.920269061687705,
+    "lon": -73.12909825637885
+  },
+  "sup_vietnamese_pho": {
+    "aliases": ["sup vietnamese", "pho stony brook"],
+    "lat": 40.919815060345876,
+    "lon": -73.12998069969798
+  },
+  "starbucks": {
+    "aliases": ["starbucks"],
+    "lat": 40.913238713778824,
+    "lon": -73.12609686975615
+  },
+  "dunkin": {
+    "aliases": ["dunkin", "dunkin donuts"],
+    "lat": 40.914580197368366,
+    "lon": -73.12390434851328
+  }
+}

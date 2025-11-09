@@ -10,7 +10,6 @@ import com.navis.pepscout.data.Cache
 import com.navis.pepscout.data.Keystore
 import com.navis.pepscout.data.PrefsStore
 import com.navis.pepscout.net.ElevenLabsClient
-import com.navis.pepscout.util.Events
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +48,6 @@ class VoicePlayer(
     
     init {
         initializePlayer()
-        startEventSubscription()
     }
 
     private fun initializePlayer() {
@@ -57,25 +55,6 @@ class VoicePlayer(
             addListener(playerListener)
         }
         Log.d(TAG, "ExoPlayer initialized")
-    }
-
-    private fun startEventSubscription() {
-        // Listen for voice events from safety system and other components
-        scope.launch {
-            Events.flowOf<Events.VoiceEvent>().collect { event ->
-                when (event.action) {
-                    "speak" -> {
-                        val priority = when (event.priority) {
-                            "urgent" -> Priority.Urgent
-                            "low" -> Priority.Low
-                            else -> Priority.Normal
-                        }
-                        speak(event.text, priority)
-                    }
-                }
-            }
-        }
-        Log.d(TAG, "Voice event subscription started")
     }
 
     /**
@@ -169,24 +148,10 @@ class VoicePlayer(
                         
                         item.onComplete?.invoke()
                         
-                        // Emit completion event
-                        Events.emit(Events.VoiceEvent(
-                            action = "completed",
-                            text = item.text,
-                            priority = item.priority.name.lowercase()
-                        ))
-                        
                     } else {
                         Log.e(TAG, "Failed to get TTS audio for: ${item.text}")
                         _state.value = PlaybackState.Error("TTS generation failed")
                         item.onComplete?.invoke()
-                        
-                        // Emit error event  
-                        Events.emit(Events.VoiceEvent(
-                            action = "error",
-                            text = item.text,
-                            priority = item.priority.name.lowercase()
-                        ))
                     }
                     
                 } catch (e: Exception) {

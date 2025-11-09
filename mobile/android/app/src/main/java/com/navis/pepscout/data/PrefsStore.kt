@@ -23,23 +23,9 @@ class PrefsStore(private val context: Context) {
         private val CV_ENABLED = booleanPreferencesKey("cv_enabled")
         private val FIRST_RUN = booleanPreferencesKey("first_run")
         
-        // Safety configuration keys
-        private val SAFETY_CONE_DEG = floatPreferencesKey("safety_cone_deg")
-        private val SAFETY_MIN_BOX_AREA_RATIO = floatPreferencesKey("safety_min_box_area_ratio")
-        private val SAFETY_MIN_BLOCK_MS = intPreferencesKey("safety_min_block_ms")
-        private val SAFETY_COOLDOWN_MS = intPreferencesKey("safety_cooldown_ms")
-        private val SAFETY_WALL_TRIGGER_FRAMES = intPreferencesKey("safety_wall_trigger_frames")
-        
         // Default values
         private const val DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM" // Default ElevenLabs voice
         private const val DEFAULT_VOICE_SPEED = 1.0f
-        
-        // Safety defaults
-        private const val DEFAULT_SAFETY_CONE_DEG = 20f
-        private const val DEFAULT_SAFETY_MIN_BOX_AREA_RATIO = 0.04f
-        private const val DEFAULT_SAFETY_MIN_BLOCK_MS = 300
-        private const val DEFAULT_SAFETY_COOLDOWN_MS = 2000
-        private const val DEFAULT_SAFETY_WALL_TRIGGER_FRAMES = 10
     }
 
     val stairsDisabled: Flow<Boolean> = context.dataStore.data
@@ -59,22 +45,6 @@ class PrefsStore(private val context: Context) {
         
     val isFirstRun: Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[FIRST_RUN] ?: true }
-
-    // Safety configuration flows
-    val safetyConeDegrees: Flow<Float> = context.dataStore.data
-        .map { preferences -> preferences[SAFETY_CONE_DEG] ?: DEFAULT_SAFETY_CONE_DEG }
-
-    val safetyMinBoxAreaRatio: Flow<Float> = context.dataStore.data
-        .map { preferences -> preferences[SAFETY_MIN_BOX_AREA_RATIO] ?: DEFAULT_SAFETY_MIN_BOX_AREA_RATIO }
-
-    val safetyMinBlockMs: Flow<Int> = context.dataStore.data
-        .map { preferences -> preferences[SAFETY_MIN_BLOCK_MS] ?: DEFAULT_SAFETY_MIN_BLOCK_MS }
-
-    val safetyCooldownMs: Flow<Int> = context.dataStore.data
-        .map { preferences -> preferences[SAFETY_COOLDOWN_MS] ?: DEFAULT_SAFETY_COOLDOWN_MS }
-
-    val safetyWallTriggerFrames: Flow<Int> = context.dataStore.data
-        .map { preferences -> preferences[SAFETY_WALL_TRIGGER_FRAMES] ?: DEFAULT_SAFETY_WALL_TRIGGER_FRAMES }
 
     suspend fun setStairsDisabled(disabled: Boolean) {
         context.dataStore.edit { preferences ->
@@ -122,37 +92,6 @@ class PrefsStore(private val context: Context) {
     suspend fun getCurrentAvoidHills(): Boolean {
         return context.dataStore.data.map { it[AVOID_HILLS] ?: false }.let {
             kotlinx.coroutines.flow.first(it)
-        }
-    }
-
-    // Safety configuration setters
-    suspend fun setSafetyConeDegrees(degrees: Float) {
-        context.dataStore.edit { preferences ->
-            preferences[SAFETY_CONE_DEG] = degrees
-        }
-    }
-
-    suspend fun setSafetyMinBoxAreaRatio(ratio: Float) {
-        context.dataStore.edit { preferences ->
-            preferences[SAFETY_MIN_BOX_AREA_RATIO] = ratio
-        }
-    }
-
-    suspend fun setSafetyMinBlockMs(ms: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[SAFETY_MIN_BLOCK_MS] = ms
-        }
-    }
-
-    suspend fun setSafetyCooldownMs(ms: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[SAFETY_COOLDOWN_MS] = ms
-        }
-    }
-
-    suspend fun setSafetyWallTriggerFrames(frames: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[SAFETY_WALL_TRIGGER_FRAMES] = frames
         }
     }
 }

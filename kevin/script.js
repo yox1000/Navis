@@ -1,10 +1,6 @@
-import { handleQuery } from "../backend/src/router.js";
-
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
-const sendBtn = document.getElementById('sendBtn');
 const transcriptElem = document.getElementById('transcript');
-const replyElem = document.getElementById('reply');
 
 let recognition;
 let mediaRecorder;
@@ -51,10 +47,6 @@ stopBtn.onclick = () => {
     startBtn.disabled = false;
     stopBtn.disabled = true;
 };
-
-// sendBtn.onclick = async () => {
-//     transcriptElem.textContent = await handleQuery(transcriptElem.textContent, [40.748817, -73.985428]);
-// }
 
 // Function to download recorded audio
 function downloadAudio() {
