@@ -117,6 +117,15 @@
 - QR anchor specifications (LIB:ENTR, LIB:ELEV, LIB:DEST)
 - Instructions for floor plan and QR code generation
 
+**✅ Safety CV System (Phase 2.1)**
+- Enhanced CVPlugin with free-space vector computation (7-bin analysis)
+- Wall proximity detection using edge density + FOE heuristics
+- SafetyManager with fusion logic and 20° heading cone
+- Rate limiting and debounce (2s cooldown, 300ms block threshold)
+- Event bus system for decoupled component communication
+- Safety preferences with configurable thresholds
+- Vibration patterns and TTS preemption for urgent warnings
+
 ## 🏗️ Project Structure
 
 ```

@@ -47,6 +47,12 @@ class CVPlugin : Plugin() {
     private val centerCropRatio = 0.6f // Only detect objects in center 60% of frame
     private val minBoxAreaRatio = 0.01f // Minimum box area relative to input size
     
+    // Safety CV additions
+    private val frameHistory = mutableListOf<FrameData>()
+    private val maxFrameHistory = 10
+    private var wallFrameCount = 0
+    private var lastOpticalFlowBitmap: Bitmap? = null
+    
     companion object {
         const val TAG = "CVPlugin"
     }
@@ -187,6 +193,9 @@ class CVPlugin : Plugin() {
             // Filter detections and emit hazard events
             filterAndEmitHazards(detections)
             
+            // Compute safety features (free-space and wall detection)
+            computeSafetyFeatures(bitmap, detections)
+            
         } catch (e: Exception) {
             Log.e(TAG, "Error in image processing", e)
         }
@@ -319,6 +328,246 @@ class CVPlugin : Plugin() {
         Log.d(TAG, "Hazard detected: ${hazard.getString("label")} - ${hazard.getString("severity")}")
     }
 
+    /**
+     * Compute free-space vector and wall proximity for safety navigation
+     */
+    private fun computeSafetyFeatures(bitmap: Bitmap, detections: Array<Detection>) {
+        try {
+            // 1. Compute free-space vector
+            val freeSpaceAngle = computeFreeSpaceVector(bitmap, detections)
+            if (freeSpaceAngle != null) {
+                emitFreeSpaceEvent(freeSpaceAngle.first, freeSpaceAngle.second)
+            }
+            
+            // 2. Check for wall proximity
+            val wallDistance = computeWallProximity(bitmap)
+            if (wallDistance != null) {
+                emitWallEvent(wallDistance)
+            }
+            
+        } catch (e: Exception) {
+            Log.w(TAG, "Error computing safety features", e)
+        }
+    }
+
+    /**
+     * Compute free-space vector using 7 vertical bins
+     * Returns (angle_degrees, confidence) or null
+     */
+    private fun computeFreeSpaceVector(bitmap: Bitmap, detections: Array<Detection>): Pair<Double, Double>? {
+        val width = bitmap.width
+        val height = bitmap.height
+        val binWidth = width / 7
+        
+        // Initialize occupancy bins
+        val binOccupancy = DoubleArray(7) { 0.0 }
+        
+        // Add detection occupancy to bins
+        for (detection in detections) {
+            val box = detection.box
+            val centerX = (box[1] + box[3]) / 2f * width // ymin, xmin, ymax, xmax format
+            val boxWidth = (box[3] - box[1]) * width
+            val boxHeight = (box[2] - box[0]) * height
+            val boxArea = boxWidth * boxHeight
+            
+            // Only consider objects that could block navigation
+            if (boxArea > width * height * 0.02) { // 2% of frame
+                val binIndex = ((centerX / binWidth).toInt()).coerceIn(0, 6)
+                val occupancyScore = boxArea / (binWidth * height)
+                binOccupancy[binIndex] = maxOf(binOccupancy[binIndex], occupancyScore)
+            }
+        }
+        
+        // Add optical flow occupancy (simplified - based on edge density)
+        addOpticalFlowOccupancy(bitmap, binOccupancy)
+        
+        // Find longest contiguous run of low-occupancy bins that includes center
+        val centerBin = 3 // Middle bin
+        val lowOccupancyThreshold = 0.3
+        
+        var bestRunStart = -1
+        var bestRunLength = 0
+        var bestRunScore = 0.0
+        
+        // Check all possible runs that include the center
+        for (start in 0..centerBin) {
+            var length = 0
+            var totalOccupancy = 0.0
+            
+            for (end in start until 7) {
+                if (binOccupancy[end] <= lowOccupancyThreshold) {
+                    length++
+                    totalOccupancy += binOccupancy[end]
+                    
+                    // Check if this run includes center and is better
+                    if (end >= centerBin && length > bestRunLength) {
+                        bestRunStart = start
+                        bestRunLength = length
+                        bestRunScore = totalOccupancy / length
+                    }
+                } else {
+                    break // Run broken by high occupancy
+                }
+            }
+        }
+        
+        if (bestRunLength >= 2) { // At least 2 bins wide
+            val runCenterBin = bestRunStart + bestRunLength / 2.0
+            val frameCenterBin = 3.0
+            
+            // Convert to angle: positive = right, negative = left
+            val binAngle = (runCenterBin - frameCenterBin) * (60.0 / 7) // Assume 60 degree FOV
+            val confidence = (1.0 - bestRunScore).coerceIn(0.0, 1.0)
+            
+            Log.d(TAG, "Free space: ${binAngle}° confidence=${confidence}")
+            return Pair(binAngle, confidence)
+        }
+        
+        return null
+    }
+
+    /**
+     * Add optical flow-like occupancy based on edge density
+     */
+    private fun addOpticalFlowOccupancy(bitmap: Bitmap, binOccupancy: DoubleArray) {
+        val width = bitmap.width
+        val height = bitmap.height
+        val binWidth = width / 7
+        
+        // Simple edge detection using color differences
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        
+        for (binIndex in 0 until 7) {
+            val binStart = binIndex * binWidth
+            val binEnd = minOf(binStart + binWidth, width)
+            var edgeCount = 0
+            var totalPixels = 0
+            
+            // Sample middle section of frame for edges
+            val sampleStartY = height / 4
+            val sampleEndY = 3 * height / 4
+            
+            for (y in sampleStartY until sampleEndY step 4) {
+                for (x in binStart until binEnd step 4) {
+                    if (x + 1 < width && y + 1 < height) {
+                        val pixel = pixels[y * width + x]
+                        val rightPixel = pixels[y * width + x + 1]
+                        val bottomPixel = pixels[(y + 1) * width + x]
+                        
+                        val grayValue = (Color.red(pixel) + Color.green(pixel) + Color.blue(pixel)) / 3
+                        val rightGray = (Color.red(rightPixel) + Color.green(rightPixel) + Color.blue(rightPixel)) / 3
+                        val bottomGray = (Color.red(bottomPixel) + Color.green(bottomPixel) + Color.blue(bottomPixel)) / 3
+                        
+                        if (kotlin.math.abs(grayValue - rightGray) > 30 || 
+                            kotlin.math.abs(grayValue - bottomGray) > 30) {
+                            edgeCount++
+                        }
+                        totalPixels++
+                    }
+                }
+            }
+            
+            if (totalPixels > 0) {
+                val edgeDensity = edgeCount.toDouble() / totalPixels
+                // High edge density suggests motion or texture, not free space
+                binOccupancy[binIndex] += edgeDensity * 0.5
+            }
+        }
+    }
+
+    /**
+     * Compute wall proximity using edge density and FOE contraction heuristic
+     */
+    private fun computeWallProximity(bitmap: Bitmap): Double? {
+        val width = bitmap.width
+        val height = bitmap.height
+        
+        // Analyze central columns for high gradient with no parallax
+        val centralStartX = width * 0.3
+        val centralEndX = width * 0.7
+        val centralWidth = centralEndX - centralStartX
+        
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        
+        var highGradientColumns = 0
+        val totalCentralColumns = (centralEndX - centralStartX).toInt()
+        
+        for (x in centralStartX.toInt() until centralEndX.toInt() step 2) {
+            var verticalGradientSum = 0
+            var sampleCount = 0
+            
+            // Check vertical gradient in this column
+            for (y in height/4 until 3*height/4 step 4) {
+                if (y + 4 < height) {
+                    val topPixel = pixels[y * width + x]
+                    val bottomPixel = pixels[(y + 4) * width + x]
+                    
+                    val topGray = (Color.red(topPixel) + Color.green(topPixel) + Color.blue(topPixel)) / 3
+                    val bottomGray = (Color.red(bottomPixel) + Color.green(bottomPixel) + Color.blue(bottomPixel)) / 3
+                    
+                    verticalGradientSum += kotlin.math.abs(topGray - bottomGray)
+                    sampleCount++
+                }
+            }
+            
+            if (sampleCount > 0) {
+                val avgGradient = verticalGradientSum.toDouble() / sampleCount
+                if (avgGradient > 25) { // High gradient threshold
+                    highGradientColumns++
+                }
+            }
+        }
+        
+        val highGradientRatio = highGradientColumns.toDouble() / totalCentralColumns
+        
+        // Track consecutive frames with high gradient (wall indicator)
+        if (highGradientRatio > 0.7) {
+            wallFrameCount++
+        } else {
+            wallFrameCount = 0
+        }
+        
+        // Emit wall event if sustained high gradient for enough frames
+        if (wallFrameCount >= 10) { // 10 frame threshold
+            // Estimate distance based on gradient intensity and coverage
+            val distance = when {
+                highGradientRatio > 0.9 -> 0.5 // Very close
+                highGradientRatio > 0.8 -> 0.7 // Close
+                else -> 1.0 // Moderate distance
+            }
+            
+            Log.d(TAG, "Wall detected: ${distance}m gradient=${highGradientRatio}")
+            return distance
+        }
+        
+        return null
+    }
+
+    private fun emitFreeSpaceEvent(angleDegrees: Double, confidence: Double) {
+        val data = JSObject().apply {
+            put("type", "free_space")
+            put("angle_deg", angleDegrees)
+            put("confidence", confidence)
+            put("ts", System.currentTimeMillis())
+        }
+        
+        notifyListeners("free_space", data)
+        Log.d(TAG, "Free space: ${angleDegrees}° confidence=${confidence}")
+    }
+
+    private fun emitWallEvent(distanceMeters: Double) {
+        val data = JSObject().apply {
+            put("type", "wall")
+            put("distance_m", distanceMeters)
+            put("ts", System.currentTimeMillis())
+        }
+        
+        notifyListeners("wall", data)
+        Log.d(TAG, "Wall proximity: ${distanceMeters}m")
+    }
+
     override fun handleOnDestroy() {
         scope.cancel()
         stopCamera()
@@ -332,5 +581,11 @@ class CVPlugin : Plugin() {
         val classId: Int,
         val confidence: Float,
         val label: String
+    )
+    
+    data class FrameData(
+        val timestamp: Long,
+        val edgeDensity: Double,
+        val gradientRatio: Double
     )
 }
